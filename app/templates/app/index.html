@@ -1,0 +1,2003 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>リマインダー</title>
+
+    <style>
+        body {
+            margin: 0;
+            background-color: #D8E0D8;
+            color: #344943;
+            font-family: sans-serif;
+        }
+
+        .deadline {
+            padding: 8px 12px;
+            border-radius: 10px;
+            font-size: 14px;
+        }
+
+        .deadline-overdue {
+            background-color: #FCE8EC;
+            color: #9E2946;
+        }
+
+        .deadline-today {
+            background-color: #FFF1D9;
+            color: #92560D;
+        }
+
+        .deadline-normal {
+            background-color: #E5F4EB;
+            color: #246343;
+        }
+
+        .deadline-done {
+            background-color: #EEE9FA;
+            color: #59428C;
+        }
+
+
+
+        .priority {
+            display: inline-block;
+            padding: 5px 10px;
+            margin: 6px 0;
+            border-radius: 15px;
+            font-size: 13px;
+        }
+
+        .priority-high {
+            background-color: #FCE8EC;
+            color: #9E2946;
+        }
+
+        .priority-medium {
+            background-color: #FFF1D9;
+            color: #92560D;
+        }
+
+        .priority-low {
+            background-color: #E5F4EB;
+            color: #246343;
+        }
+
+
+        /* カード一覧 */
+        .card-list {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 30px;
+            padding: 28px 16px;
+        }
+
+        /* カード本体：使い込まれた青緑色の紙 */
+        .task-card {
+            display: block;
+            position: relative;
+            width: 340px;
+            padding: 15px;
+            box-sizing: border-box;
+            color: #283b3b;
+            border: 1px solid #b89b6a;
+            border-radius: 5px;
+
+            background:
+                radial-gradient(ellipse at 15% 10%, #527b70aa, transparent 45%),
+                radial-gradient(ellipse at 90% 90%, #203e3b88, transparent 50%),
+                linear-gradient(145deg, #47756d, #315c55 55%, #3c665d);
+
+
+            box-shadow:
+                inset 0 0 0 4px #94876b,
+                inset 0 0 0 6px #31554e,
+                inset 0 0 16px #172e2b66,
+                0 5px 12px #243a3526;
+
+
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        /* 内側の控えめな額縁 */
+        .task-card::before {
+            content: "";
+            position: absolute;
+            inset: 8px;
+            border: 1px solid #c5ad7c;
+            border-radius: 5px;
+            pointer-events: none;
+        }
+
+        /* カード上部のタイトル欄 */
+        .task-card h3 {
+            position: relative;
+            margin: 0 0 8px;
+            padding: 12px 42px 12px 10px;
+            min-height: 35px;
+            display: flex;
+            align-items: center;
+
+
+            background:
+                radial-gradient(ellipse at 15% 20%,
+                    #f0e5c8 0%,
+                    transparent 65%),
+                linear-gradient(110deg,
+                    #d8c9a7,
+                    #e8ddc1 48%,
+                    #d9c9a5);
+
+
+            border: 2px solid #b59a69;
+            outline: 1px solid #385b54;
+            outline-offset: -5px;
+
+            color: #293d40;
+            font-family: serif;
+            font-size: 22px;
+            font-weight: bold;
+            overflow-wrap: anywhere;
+        }
+
+        /* 右上の丸い紋章 */
+        .task-card h3::after {
+            content: "記";
+            position: absolute;
+            right: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+
+            width: 31px;
+            height: 31px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            border: 2px solid #bca16b;
+            border-radius: 50%;
+            background: #315b59;
+            color: #f0e1bd;
+            font-family: serif;
+            font-size: 17px;
+        }
+
+        /* カードの画像：自分で登録した写真を表示 */
+
+        .task-card .card-image {
+            display: block;
+            width: 100%;
+            height: 190px;
+            box-sizing: border-box;
+            object-fit: cover;
+
+            border: 5px solid #8f8063;
+            outline: 1px solid #c4b18c;
+            outline-offset: -8px;
+
+            background: #d9c9a8;
+
+            box-shadow:
+                inset 0 0 12px #56482d35,
+                0 2px 5px #1e302c40;
+        }
+
+
+        /* 画像がないときの空欄 */
+
+        /* 画像がないとき：古いスケッチ用紙 */
+        .task-card div.card-image {
+            position: relative;
+
+            background:
+                radial-gradient(ellipse at 12% 18%,
+                    #aa906a28 0%,
+                    transparent 45%),
+                radial-gradient(ellipse at 88% 82%,
+                    #8c775522 0%,
+                    transparent 40%),
+                #dfd4b9;
+        }
+
+        /* スケッチ用紙の小さな記録番号 */
+        .task-card div.card-image::after {
+            position: absolute;
+            right: 12px;
+            bottom: 10px;
+
+            color: #8c8069;
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: 9px;
+            letter-spacing: 1px;
+            opacity: 0.65;
+        }
+
+
+        /* 炎の数 */
+        .task-card .card-importance {
+            margin: 9px 2px 7px;
+            min-height: 22px;
+            color: #df6b3d;
+            font-size: 17px;
+            letter-spacing: 2px;
+            text-align: right;
+        }
+
+        /* 説明文：古い羊皮紙 */
+        .task-card .card-description {
+            min-height: 100px;
+            margin-top: 0;
+            padding: 15px 12px;
+
+            border: 2px solid #ad9365;
+
+            background:
+                radial-gradient(ellipse at 12% 85%,
+                    #b8a47c30 0%,
+                    transparent 55%),
+                radial-gradient(ellipse at 88% 12%,
+                    #c4b18a28 0%,
+                    transparent 48%),
+                #e5dcc5;
+
+
+            box-shadow: inset 0 0 10px #88724a30;
+            color: #403c32;
+
+            font-family: serif;
+            font-size: 13px;
+            line-height: 1.8;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+        }
+
+        /* 期限・優先度 */
+
+        /* 期限・優先度：旅人の記録 */
+        .task-card p {
+            margin: 8px 3px;
+            padding: 3px 0 3px 8px;
+
+            border-left: 2px solid #9c987c;
+
+            color: #e5dcc5;
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: 14px;
+            line-height: 1.8;
+            letter-spacing: 0.3px;
+        }
+
+
+        /* 操作ボタン */
+        .task-card .card-actions {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 7px;
+            margin-top: 12px;
+            padding-top: 10px;
+            border-top: 1px solid #b8a078;
+        }
+
+        /* ボタン・編集リンク */
+
+        /* 操作ボタン：使い込まれた紙の札 */
+        .task-card .card-actions button,
+        .task-card .card-actions a {
+            display: inline-block;
+            padding: 7px 11px;
+
+            border: 1px solid #a99a79;
+            border-radius: 2px;
+
+            background:
+                linear-gradient(110deg,
+                    #d7c9a9,
+                    #e4d8bd 55%,
+                    #d2c3a2);
+
+            color: #3e493e;
+            font-family: serif;
+            font-size: 12px;
+            letter-spacing: 0.3px;
+
+            box-shadow:
+                inset 0 1px 0 #ffffff35,
+                1px 2px 3px #172e2b30;
+
+            text-decoration: none;
+            cursor: pointer;
+
+            transition: background-color 0.2s, transform 0.2s;
+        }
+
+
+
+        .task-card .card-actions button:hover,
+        .task-card .card-actions a:hover {
+            background: #eee2c7;
+            transform: translateY(-1px);
+        }
+
+
+        /* マウスを乗せたとき */
+        .task-card:hover {
+            transform: translateY(-3px);
+            box-shadow:
+                inset 0 0 0 4px #b8a078,
+                inset 0 0 0 6px #31554e,
+                0 12px 24px #243a3545;
+        }
+
+        /* 完了したカード */
+
+        /* 完了済みカード：記録を終えた古いページ */
+        .task-card.completed {
+            opacity: 0.85;
+            filter: saturate(0.75);
+
+            background:
+                radial-gradient(ellipse at 12% 15%,
+                    #b29b7040,
+                    transparent 45%),
+                radial-gradient(ellipse at 90% 85%,
+                    #1e302c70,
+                    transparent 50%),
+                linear-gradient(145deg,
+                    #526d63,
+                    #3e5c53 55%,
+                    #48675d);
+        }
+
+        /* 完了済みカードのタイトル */
+        .task-card.completed h3 {
+            background: #d4c6a7;
+            color: #69604e;
+        }
+
+        /* 完了済みカードの説明欄 */
+        .task-card.completed .card-description {
+            background: #d8ccb1;
+            color: #625847;
+        }
+
+
+        /* スマホでは画面幅に合わせる */
+        @media (max-width: 380px) {
+            .task-card {
+                width: 100%;
+            }
+        }
+
+
+
+
+        /* 期限切れカード：長い間放置された記録 */
+        .task-card.overdue {
+            background:
+                radial-gradient(ellipse at 8% 12%,
+                    #a68c6040 0%,
+                    transparent 38%),
+                radial-gradient(ellipse at 92% 85%,
+                    #172b2777 0%,
+                    transparent 48%),
+                radial-gradient(ellipse at 75% 15%,
+                    #b5a08020 0%,
+                    transparent 30%),
+                linear-gradient(145deg,
+                    #4c665c,
+                    #304940 55%,
+                    #3b544a);
+
+            border-color: #8c7756;
+
+            box-shadow:
+                inset 0 0 0 4px #89795e,
+                inset 0 0 0 6px #304940,
+                inset 0 0 18px #14282280,
+                0 6px 14px #243a3530;
+        }
+
+
+
+        /* 期限切れカードのタイトル：色褪せた羊皮紙 */
+        .task-card.overdue h3 {
+            background:
+                radial-gradient(ellipse at 12% 25%,
+                    #9b79502b 0%,
+                    transparent 48%),
+                radial-gradient(ellipse at 90% 85%,
+                    #80633f20 0%,
+                    transparent 42%),
+                linear-gradient(110deg,
+                    #cbb894,
+                    #ddccaa 50%,
+                    #c7b18b);
+
+            border-color: #9c8055;
+            color: #574638;
+        }
+
+
+        /* 期限切れカードの紋章 */
+        .task-card.overdue h3::after {
+            background: #42574d;
+            border-color: #a58b5e;
+            color: #d4c19a;
+        }
+
+        /* 期限切れカードの画像枠 */
+        .task-card.overdue .card-image {
+            border-color: #9b8159;
+            outline-color: #c5ad83;
+            filter: sepia(0.12) saturate(0.82);
+        }
+
+
+        /* 期限切れカードの説明欄：年月を経た記録用紙 */
+        .task-card.overdue .card-description {
+            background:
+                radial-gradient(ellipse at 10% 15%,
+                    #92724935 0%,
+                    transparent 45%),
+                radial-gradient(ellipse at 88% 90%,
+                    #80623e30 0%,
+                    transparent 42%),
+                linear-gradient(135deg,
+                    #d1bd99,
+                    #c6af88 55%,
+                    #d9c5a2);
+
+            border-color: #94774c;
+            color: #514536;
+
+            box-shadow:
+                inset 0 0 12px #79603b35;
+        }
+
+
+        /* 期限切れカードの期限表示 */
+        .task-card.overdue .deadline {
+            background-color: #ead0c0;
+            color: #873e31;
+        }
+
+
+        /* カード拡大時の背景 */
+        .card-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 20, 18, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        /* 表示中 */
+        .card-modal.show {
+            display: flex;
+        }
+
+        /* 拡大カードを置く場所 */
+        .card-modal-content {
+            position: relative;
+            max-width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        /* 拡大カード */
+        .card-modal-content .task-card {
+            width: min(340px, 80vw);
+            max-height: 85vh;
+            overflow-y: auto;
+            cursor: default;
+            box-sizing: border-box;
+        }
+
+        /* 拡大した画像 */
+        .card-modal-content .card-image {
+            max-width: 100%;
+            object-fit: cover;
+        }
+
+        /* 閉じるボタン */
+        .card-modal-close {
+            position: absolute;
+            top: -12px;
+            right: -12px;
+            z-index: 2;
+            width: 36px;
+            height: 36px;
+            border: 2px solid #e4c46f;
+            border-radius: 50%;
+            background: #263f38;
+            color: white;
+            font-size: 22px;
+            cursor: pointer;
+        }
+
+
+        /* ===== 旅人の記録帳：タスク作成欄 ===== */
+
+        .task-form {
+            max-width: 860px;
+            margin: 30px auto;
+            padding: 28px 30px;
+            box-sizing: border-box;
+
+
+
+
+
+            background:
+                radial-gradient(ellipse at 0% 0%,
+                    #8f795035 0%,
+                    transparent 35%),
+                radial-gradient(ellipse at 100% 100%,
+                    #8f795030 0%,
+                    transparent 38%),
+                radial-gradient(ellipse at 100% 0%,
+                    #ffffff38 0%,
+                    transparent 28%),
+                radial-gradient(ellipse at 0% 100%,
+                    #8f795022 0%,
+                    transparent 30%),
+                radial-gradient(ellipse at 2% 48%,
+                    #8f795018 0%,
+                    transparent 12%),
+                radial-gradient(ellipse at 98% 70%,
+                    #8f79501c 0%,
+                    transparent 10%),
+                #e5e2d2;
+
+            border: 1px solid #aaa991;
+            border-radius: 2px;
+
+            outline: 1px solid #e5e2d2;
+            outline-offset: -5px;
+
+
+            box-shadow:
+                inset 0 0 18px #8f79500a,
+                2px 4px 10px #283b3212;
+
+
+            /* 紙の端に残った、控えめな擦り跡 */
+            background-blend-mode: multiply;
+
+
+            color: #35483d;
+
+        }
+
+        /* 手帳の見出し */
+        .task-form .form-heading {
+            margin-bottom: 25px;
+            padding: 0 0 13px;
+
+            border-bottom: 1px solid #b6b5a0;
+
+            color: #40594a;
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: 19px;
+            font-weight: normal;
+            letter-spacing: 1.5px;
+            text-align: left;
+        }
+
+        .task-form .form-heading p {
+            margin: 6px 0 0;
+            color: #777969;
+            font-family: sans-serif;
+            font-size: 12px;
+            font-weight: normal;
+            letter-spacing: 0.5px;
+        }
+
+        .task-form .form-heading-icon {
+            display: none;
+        }
+
+        /* 項目の配置 */
+        .task-form .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 19px 24px;
+        }
+
+        .task-form .form-field {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+            min-width: 0;
+        }
+
+        .task-form .form-field-wide {
+            grid-column: 1 / -1;
+        }
+
+        /* ラベルは手帳の書き込み見出し風に */
+        .task-form .form-field label {
+            color: #596b59;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        /* 紙に書き込むような入力欄 */
+        .task-form input[type="text"],
+        .task-form input[type="date"],
+        .task-form select,
+        .task-form textarea,
+        .task-form input[type="file"] {
+            width: 100%;
+            min-width: 0;
+            box-sizing: border-box;
+            padding: 11px 12px;
+
+            border: 1px solid #c8c8b6;
+            border-radius: 2px;
+
+            background: #f0eddf;
+            color: #35483d;
+
+            font-family: sans-serif;
+            font-size: 14px;
+
+            box-shadow: inset 0 1px 2px #514b3510;
+            transition: border-color 0.15s, background-color 0.15s;
+        }
+
+        .task-form input::placeholder,
+        .task-form textarea::placeholder {
+            color: #999887;
+        }
+
+        /* 説明欄はノートの余白のように */
+        .task-form textarea {
+            resize: vertical;
+            min-height: 88px;
+            line-height: 1.9;
+
+            background:
+                repeating-linear-gradient(transparent,
+                    transparent 30px,
+                    #7d917c24 31px),
+                #f0eddf;
+        }
+
+        /* 選択した欄は控えめに強調 */
+        .task-form input:focus,
+        .task-form select:focus,
+        .task-form textarea:focus {
+            outline: none;
+            border-color: #718674;
+            background-color: #f7f3e6;
+            box-shadow: 0 0 0 2px #71867418;
+        }
+
+        /* 画像ファイル欄 */
+        .task-form input[type="file"] {
+            padding: 8px;
+            color: #626957;
+        }
+
+        /* 記録を追加するボタン */
+        .task-form .task-form-submit {
+            display: block;
+            width: 100%;
+            margin-top: 25px;
+            padding: 13px 16px;
+
+            border: 1px solid #3f5a49;
+            border-radius: 2px;
+
+            background: #405c4a;
+            color: #f0eddf;
+
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: 14px;
+            letter-spacing: 1px;
+
+            cursor: pointer;
+            transition: background-color 0.15s;
+        }
+
+        .task-form .task-form-submit:hover {
+            background: #304b3a;
+        }
+
+        /* 小さな画面では縦並びに */
+        @media (max-width: 600px) {
+            .task-form {
+                margin: 18px 10px;
+                padding: 21px 16px;
+            }
+
+            .task-form .form-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+
+            .task-form .form-field-wide {
+                grid-column: auto;
+            }
+        }
+
+
+        /* 旅人の記録帳：紙の端の小さな擦れ */
+        .task-form {
+            position: relative;
+        }
+
+        .task-form::before {
+            content: "";
+            position: absolute;
+            inset: 5px;
+            pointer-events: none;
+            border: 1px solid transparent;
+            background:
+                linear-gradient(135deg,
+                    #8b795020 0 2px,
+                    transparent 3px 100%) top left / 28px 20px no-repeat,
+                linear-gradient(225deg,
+                    #8b795018 0 2px,
+                    transparent 3px 100%) top right / 24px 18px no-repeat,
+                linear-gradient(45deg,
+                    #8b79501c 0 2px,
+                    transparent 3px 100%) bottom left / 22px 18px no-repeat,
+                linear-gradient(315deg,
+                    #8b795020 0 2px,
+                    transparent 3px 100%) bottom right / 30px 20px no-repeat;
+        }
+
+
+        /* 記録帳の小さな通し番号 */
+        .task-form .journal-index {
+            display: block;
+            margin-bottom: 8px;
+            color: #827c65;
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: 10px;
+            letter-spacing: 2px;
+            font-weight: normal;
+        }
+
+
+        /* 旅の記録：一覧の見出し */
+        .journal-list-heading {
+            max-width: 860px;
+            margin: 42px auto 12px;
+            padding: 0 6px 15px;
+
+            border-bottom: 1px solid #a8b2a4;
+            color: #40594a;
+        }
+
+        .journal-list-index {
+            display: block;
+            margin-bottom: 8px;
+
+            color: #7b8575;
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: 10px;
+            letter-spacing: 2px;
+        }
+
+        .journal-list-heading h2 {
+            margin: 0;
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: 24px;
+            font-weight: normal;
+            letter-spacing: 2px;
+        }
+
+        .journal-list-heading p {
+            margin: 8px 0 0;
+            color: #6d7d70;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+        }
+
+        @media (max-width: 900px) {
+            .journal-list-heading {
+                margin-left: 16px;
+                margin-right: 16px;
+            }
+        }
+
+
+        /* 期限切れカード：期限超過の印 */
+        .task-card.overdue::after {
+            content: "期限超過";
+
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 2;
+
+            padding: 4px 8px;
+
+            border: 1px solid #a46e58;
+            border-radius: 2px;
+
+            background: #d5b9a0;
+            color: #874e3f;
+
+            font-family: serif;
+            font-size: 11px;
+            font-weight: bold;
+            letter-spacing: 1px;
+
+            transform: rotate(5deg);
+
+            box-shadow: 1px 2px 3px #172e2b40;
+
+            pointer-events: none;
+        }
+
+        /* 絞り込みタブの位置を整える */
+        .filters {
+            width: calc(100% - 32px);
+            max-width: 860px;
+            margin: 18px auto 16px;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* カード内部の配置を整える */
+        .task-card {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 説明欄の高さをそろえる */
+        .task-card .card-description {
+            min-height: 110px;
+            box-sizing: border-box;
+        }
+
+        /* 操作ボタンをカードの下側に配置 */
+        .task-card .card-actions {
+            margin-top: auto;
+            padding-top: 12px;
+        }
+
+        /* 期限・優先度の間隔 */
+        .task-card p {
+            margin-top: 6px;
+            margin-bottom: 6px;
+        }
+
+        /* 入力欄にマウスを乗せたとき */
+        .task-form input:hover,
+        .task-form select:hover,
+        .task-form textarea:hover {
+            border-color: #9b9e85;
+        }
+
+        /* 入力中の欄を分かりやすくする */
+        .task-form input:focus,
+        .task-form select:focus,
+        .task-form textarea:focus {
+            outline: 2px solid #718674;
+            outline-offset: 1px;
+
+            border-color: #718674;
+            background-color: #f7f3e6;
+        }
+
+        /* 入力欄の文字を少し読みやすくする */
+        .task-form input,
+        .task-form select,
+        .task-form textarea {
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        /* タスク登録完了メッセージ */
+        .added-message {
+            max-width: 860px;
+            margin: 16px auto;
+            padding: 12px 16px;
+
+            background: #e5e2d2;
+            border: 1px solid #aaa991;
+            border-left: 4px solid #536b57;
+
+            color: #40594a;
+            font-family: serif;
+            font-size: 14px;
+        }
+
+        .added-message[hidden] {
+            display: none;
+        }
+
+        /* 登録完了メッセージの配置 */
+        .added-message {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        /* メッセージを閉じるボタン */
+        .added-message-close {
+            flex-shrink: 0;
+
+            padding: 2px 7px;
+
+            border: 1px solid #aaa991;
+            border-radius: 2px;
+
+            background: #e5e2d2;
+            color: #596b59;
+
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        /* マウスを乗せたとき */
+        .added-message-close:hover {
+            background: #d9d5c3;
+        }
+
+        /* 非表示の状態を維持 */
+        .added-message[hidden] {
+            display: none;
+        }
+
+        /* 縦型の古い日記帳フォーム */
+        .task-form {
+            max-width: 760px;
+            padding: 36px 42px;
+        }
+
+        /* 入力欄を縦1列に並べる */
+        .task-form .form-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 26px;
+        }
+
+        /* 各項目の間隔 */
+        .task-form .form-field {
+            gap: 10px;
+        }
+
+        /* 入力欄の幅 */
+        .task-form .form-field-wide {
+            grid-column: 1;
+        }
+
+        /* スマートフォン用 */
+        @media (max-width: 600px) {
+            .task-form {
+                padding: 24px 18px;
+            }
+
+            .task-form .form-grid {
+                grid-template-columns: 1fr;
+                gap: 22px;
+            }
+        }
+
+        /* 各入力項目：記録番号のスペース */
+        .task-form .form-field {
+            position: relative;
+            margin-left: 46px;
+        }
+
+        /* 左側の丸い番号 */
+        .task-form .form-field::before {
+            position: absolute;
+            left: -46px;
+            top: 0;
+
+            width: 30px;
+            height: 30px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            border: 1px solid #999477;
+            border-radius: 50%;
+
+            background: #59634d;
+            color: #f3ead5;
+
+            font-family: Georgia, serif;
+            font-size: 15px;
+
+            box-shadow: inset 0 0 0 2px #59634d,
+                inset 0 0 0 3px #a9a184;
+        }
+
+        /* 各項目の番号 */
+        .task-form .form-field:nth-child(1)::before {
+            content: "1";
+        }
+
+        .task-form .form-field:nth-child(2)::before {
+            content: "2";
+        }
+
+        .task-form .form-field:nth-child(3)::before {
+            content: "3";
+        }
+
+        .task-form .form-field:nth-child(4)::before {
+            content: "4";
+        }
+
+        .task-form .form-field:nth-child(5)::before {
+            content: "5";
+        }
+
+
+        /* 優先度のボタンを横並びにする */
+        .task-form .priority-options {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        /* 各選択ボタン */
+        .task-form .priority-option {
+            position: relative;
+            display: block;
+            cursor: pointer;
+        }
+
+        /* ラジオボタンは透明にして重ねる */
+        .task-form .priority-option input {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        /* ボタンの見た目 */
+        .task-form .priority-option span {
+            display: block;
+            padding: 13px 8px;
+
+            border: 1px solid #b8ae96;
+            border-radius: 2px;
+
+            background: #f0eddf;
+            color: #40594a;
+
+            font-family: serif;
+            font-size: 15px;
+            text-align: center;
+
+            transition: background-color 0.15s;
+        }
+
+        /* 選択中のボタン */
+        .task-form .priority-option input:checked+span {
+            background: #d8c8a5;
+            border-color: #a18452;
+            box-shadow: inset 0 0 0 1px #a18452;
+        }
+
+        /* キーボードで選択したとき */
+        .task-form .priority-option input:focus-visible+span {
+            outline: 2px solid #405c4a;
+            outline-offset: 3px;
+        }
+
+        /* マウスを乗せたとき */
+        .task-form .priority-option:hover span {
+            background-color: #e7ddc7;
+        }
+
+
+        /* 重要度：6つの選択ボタン */
+        .task-form .importance-options {
+            display: grid;
+            grid-template-columns: repeat(6, minmax(0, 1fr));
+            gap: 9px;
+        }
+
+        /* 各選択ボタン */
+        .task-form .importance-option {
+            position: relative;
+            display: block;
+            cursor: pointer;
+        }
+
+        /* ラジオボタンを透明にして重ねる */
+        .task-form .importance-option input {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        /* ボタンの見た目 */
+        .task-form .importance-option span {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+
+            min-height: 70px;
+            padding: 8px 3px;
+
+            border: 1px solid #b8ae96;
+            border-radius: 2px;
+            background: #f0eddf;
+
+            color: #40594a;
+            font-family: Georgia, serif;
+            font-size: 14px;
+        }
+
+
+        /* SVGの炎マーク */
+        .task-form .flame {
+            display: block;
+            width: 25px;
+            height: 32px;
+
+            fill: currentColor;
+            stroke: #827660;
+            stroke-width: 1.2;
+        }
+
+        /* 炎の色 */
+        .task-form .flame-1 {
+            color: #f5f5f0;
+        }
+
+        .task-form .flame-2 {
+            color: #80deea;
+        }
+
+        .task-form .flame-3 {
+            color: #81c784;
+        }
+
+        .task-form .flame-4 {
+            color: #ce93d8;
+        }
+
+        .task-form .flame-5 {
+            color: #ef5350;
+        }
+
+        .task-form .flame-6 {
+            color: #d5aa45;
+        }
+
+
+        /* 重要度ごとの色 */
+        .task-form .flame-1 {
+            color: #f5f5f0;
+            text-shadow: 0 0 1px #777;
+        }
+
+        .task-form .flame-2 {
+            color: #80deea;
+        }
+
+        .task-form .flame-3 {
+            color: #81c784;
+        }
+
+        .task-form .flame-4 {
+            color: #ce93d8;
+        }
+
+        .task-form .flame-5 {
+            color: #ef5350;
+        }
+
+        .task-form .flame-6 {
+            color: #d5aa45;
+        }
+
+        /* 選択中 */
+        .task-form .importance-option input:checked+span {
+            background: #d8c8a5;
+            border-color: #a18452;
+            box-shadow: inset 0 0 0 1px #a18452;
+        }
+
+        /* キーボード操作 */
+        .task-form .importance-option input:focus-visible+span {
+            outline: 2px solid #405c4a;
+            outline-offset: 3px;
+        }
+
+        /* マウスを乗せたとき */
+        .task-form .importance-option:hover span {
+            background: #e7ddc7;
+        }
+
+        /* 狭い画面では3列×2段 */
+        @media (max-width: 600px) {
+            .task-form .importance-options {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+        }
+
+        /* 古い写真台紙 */
+        .task-form .photo-upload {
+            position: relative;
+        }
+
+        /* ファイル入力欄を見えなくする */
+        .task-form .photo-upload input[type="file"] {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            opacity: 0;
+            overflow: hidden;
+        }
+
+        /* 写真を貼り付けるスペース */
+        .task-form .photo-upload-label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 9px;
+
+            min-height: 180px;
+            padding: 20px;
+
+            border: 1px dashed #b4a384;
+            border-radius: 2px;
+
+            background:
+                linear-gradient(135deg,
+                    #8f79500c,
+                    transparent 45%),
+                #eee7d4;
+
+            cursor: pointer;
+            text-align: center;
+        }
+
+        /* 写真のマーク */
+        .task-form .photo-upload-icon {
+            color: #8b8067;
+            font-size: 36px;
+            line-height: 1;
+        }
+
+        /* 見出し */
+        .task-form .photo-upload-title {
+            color: #4c5b4b;
+            font-family: Georgia, serif;
+            font-size: 17px;
+        }
+
+        /* 補足文 */
+        .task-form .photo-upload-description {
+            color: #898371;
+            font-size: 12px;
+        }
+
+        /* 画像選択ボタン */
+        .task-form .photo-upload-button {
+            margin-top: 5px;
+            padding: 9px 24px;
+
+            background: #d9ceb5;
+            border: 1px solid #b4a384;
+            border-radius: 2px;
+
+            color: #4b5647;
+            font-size: 13px;
+        }
+
+        /* マウスを乗せたとき */
+        .task-form .photo-upload-label:hover {
+            background-color: #e7dcc5;
+        }
+
+        /* キーボード操作時 */
+        .task-form .photo-upload input:focus-visible+.photo-upload-label {
+            outline: 2px solid #405c4a;
+            outline-offset: 3px;
+        }
+
+        /* 画像未選択時の内容 */
+        .task-form .photo-upload-empty {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 9px;
+        }
+
+        /* hidden属性があるときは非表示 */
+        .task-form .photo-upload-preview[hidden] {
+            display: none;
+        }
+
+        /* プレビュー全体 */
+        .task-form .photo-upload-preview {
+            width: 100%;
+            text-align: center;
+        }
+
+        /* 貼り付けた写真 */
+        .task-form .photo-upload-preview img {
+            display: block;
+            width: 100%;
+            max-width: 420px;
+            max-height: 280px;
+            margin: 0 auto 12px;
+
+            object-fit: contain;
+
+            padding: 8px;
+            box-sizing: border-box;
+
+            background: #f8f4e9;
+            border: 1px solid #c8bca4;
+
+            box-shadow: 2px 4px 8px #4c45301c;
+        }
+
+        /* 写真の下の文字 */
+        .task-form .photo-preview-caption {
+            display: block;
+            color: #777969;
+            font-family: Georgia, serif;
+            font-size: 12px;
+        }
+
+        /* 写真を表示するときの台紙 */
+        .task-form .photo-upload-label:has(.photo-upload-preview:not([hidden])) {
+            background-color: #e6dcc6;
+        }
+
+        /* 古い記録帳：仕上げの余白 */
+        .task-form {
+            padding: 42px 46px;
+        }
+
+        /* 見出しを少しゆったりさせる */
+        .task-form .form-heading {
+            margin-bottom: 34px;
+            padding-bottom: 18px;
+            line-height: 1.6;
+        }
+
+        /* 記録項目の縦の間隔 */
+        .task-form .form-grid {
+            gap: 0;
+        }
+
+        /* 各項目を区切る */
+        .task-form .form-field {
+            position: relative;
+            padding-bottom: 28px;
+            margin-bottom: 26px;
+            border-bottom: 1px solid #b7ad963d;
+        }
+
+        /* 最後の項目には区切り線を付けない */
+        .task-form .form-field:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        /* 番号から次の項目へつながる線 */
+        .task-form .form-field:not(:last-child)::after {
+            content: "";
+            position: absolute;
+
+            left: -32px;
+            top: 34px;
+            bottom: -24px;
+
+            width: 1px;
+            background: #b5ad91;
+        }
+
+        /* 入力欄の文字を落ち着いた色に */
+        .task-form input[type="text"],
+        .task-form input[type="date"],
+        .task-form textarea {
+            color: #403f35;
+        }
+
+        /* 登録ボタン */
+        .task-form .task-form-submit {
+            margin-top: 34px;
+            padding: 17px;
+            letter-spacing: 1.5px;
+        }
+
+        /* スマートフォン用 */
+        @media (max-width: 600px) {
+            .task-form {
+                padding: 25px 18px;
+            }
+
+            .task-form .form-field {
+                margin-left: 42px;
+                padding-bottom: 22px;
+                margin-bottom: 22px;
+            }
+
+            .task-form .form-field:not(:last-child)::after {
+                left: -28px;
+            }
+        }
+
+        /* カード一覧を横並びにする */
+        .card-list {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 24px;
+
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        /* カードを各列の幅に合わせる */
+        .card-list .task-card {
+            width: 100%;
+            max-width: none;
+            box-sizing: border-box;
+        }
+
+        /* タブレット */
+        @media (max-width: 900px) {
+            .card-list {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        /* スマートフォン */
+        @media (max-width: 600px) {
+            .card-list {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ===== カードのサイズ・配置を統一 ===== */
+
+        /* カード一覧 */
+        .card-list {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 320px));
+            justify-content: center;
+            align-items: stretch;
+            gap: 28px;
+            max-width: 1100px;
+            margin: 30px auto;
+            padding: 0 20px;
+            box-sizing: border-box;
+        }
+
+        /* カード本体 */
+        .card-list .task-card {
+            width: 100%;
+            min-width: 0;
+            height: 480px;
+            box-sizing: border-box;
+
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* タイトル */
+        .card-list .task-card h3 {
+            min-height: 58px;
+            max-height: 58px;
+            box-sizing: border-box;
+            overflow: hidden;
+
+            font-size: 19px;
+            line-height: 1.35;
+        }
+
+        /* 画像 */
+        .card-list .task-card .card-image {
+            width: 100%;
+            height: 160px;
+            min-height: 160px;
+            flex-shrink: 0;
+            box-sizing: border-box;
+            object-fit: cover;
+        }
+
+        /* 説明欄 */
+        .card-list .task-card .card-description {
+            min-height: 90px;
+            max-height: 90px;
+            overflow-y: auto;
+            box-sizing: border-box;
+            padding: 10px 12px;
+        }
+
+        /* 期限と優先度 */
+        .card-list .task-card p {
+            margin: 5px 3px;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        /* 操作ボタンを下にそろえる */
+        .card-list .task-card .card-actions {
+            margin-top: auto;
+            padding-top: 9px;
+        }
+
+        /* タブレット */
+        @media (max-width: 1050px) {
+            .card-list {
+                grid-template-columns: repeat(2, minmax(0, 320px));
+            }
+        }
+
+        /* スマートフォン */
+        @media (max-width: 700px) {
+            .card-list {
+                grid-template-columns: minmax(0, 340px);
+                gap: 20px;
+            }
+        }
+
+        /* 旅の記録：絞り込みタブ */
+        .filters {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 12px;
+
+            width: calc(100% - 48px);
+            max-width: 1500px;
+            margin: 18px auto 24px;
+        }
+
+        /* 各タブ */
+        .filters a {
+            display: inline-block;
+            padding: 10px 20px;
+
+            background: #e5e2d2;
+            border: 1px solid #aaa991;
+            border-radius: 2px;
+
+            color: #40594a;
+            font-family: Georgia, serif;
+            font-size: 13px;
+            text-decoration: none;
+
+            transition: background-color 0.2s;
+        }
+
+        /* マウスを乗せたとき */
+        .filters a:hover {
+            background: #d5d2bf;
+        }
+
+        /* 選択中のタブ */
+        .filters a.selected {
+            background: #405c4a;
+            border-color: #405c4a;
+            color: #f0eddf;
+        }
+    </style>
+</head>
+
+
+<body>
+
+
+    <form method="POST" enctype="multipart/form-data" class="task-form">
+        {% csrf_token %}
+
+
+        <div class="form-heading">
+            やることリスト
+            <p>新しいタスクを登録する</p>
+        </div>
+
+
+        <div class="form-grid">
+            <div class="form-field">
+                <label for="task-title">タスク名</label>
+                <input type="text" id="task-title" name="title" placeholder="例：レポートを提出する" required>
+            </div>
+
+            <div class="form-field">
+                <label for="task-deadline">期限</label>
+                <input type="date" id="task-deadline" name="deadline">
+            </div>
+
+            <div class="form-field">
+                <label for="task-priority">優先度</label>
+
+                <div class="priority-options">
+                    <label class="priority-option">
+                        <input type="radio" name="priority" value="high">
+                        <span>🔴 高</span>
+                    </label>
+
+                    <label class="priority-option">
+                        <input type="radio" name="priority" value="medium" checked>
+                        <span>🟡 中</span>
+                    </label>
+
+                    <label class="priority-option">
+                        <input type="radio" name="priority" value="low">
+                        <span>🟢 低</span>
+                    </label>
+                </div>
+
+            </div>
+
+
+            <div class="form-field form-field-wide">
+                <label for="task-description">説明文（カードの効果欄）</label>
+                <textarea id="task-description" name="description" rows="3" placeholder="このタスクの詳細を書こう！"></textarea>
+            </div>
+
+            <div class="form-field form-field-wide">
+                <label for="task-image">カードの画像</label>
+
+
+                <div class="photo-upload">
+                    <input type="file" name="image" id="task-image" accept="image/*">
+
+                    <label for="task-image" class="photo-upload-label">
+
+                        <!-- 画像未選択時の表示 -->
+                        <div class="photo-upload-empty" id="photo-empty">
+                            <span class="photo-upload-button">画像を選ぶ</span>
+                        </div>
+
+                        <!-- 選択した画像のプレビュー -->
+                        <div class="photo-upload-preview" id="photo-preview" hidden>
+                            <img id="photo-preview-image" alt="選択した画像のプレビュー">
+                            <span class="photo-preview-caption">
+                                写真を変更するには、ここをクリック
+                            </span>
+                        </div>
+
+                    </label>
+                </div>
+            </div> <!-- 画像項目の終わり -->
+        </div> <!-- form-gridの終わり -->
+
+        <button type="submit" class="task-form-submit">
+            ＋ カードを追加
+        </button>
+    </form>
+
+
+
+    <div class="journal-list-heading">
+        <h2>記録</h2>
+    </div>
+    <nav class="filters">
+        <a href="/?filter=all" class="{% if filter_type == 'all' %}selected{% endif %}">
+            すべて
+        </a>
+
+        <a href="/?filter=incomplete" class="{% if filter_type == 'incomplete' %}selected{% endif %}">
+            未完了
+        </a>
+
+        <a href="/?filter=completed" class="{% if filter_type == 'completed' %}selected{% endif %}">
+            完了済み
+        </a>
+
+        <a href="/?filter=today" class="{% if filter_type == 'today' %}selected{% endif %}">
+            今日の予定
+        </a>
+    </nav>
+
+
+
+    <div id="added-message" class="added-message" hidden>
+        <span>✓ 新しい記録を追加しました</span>
+
+        <button type="button" class="added-message-close" aria-label="メッセージを閉じる" onclick="closeAddedMessage()">
+            ×
+        </button>
+    </div>
+
+
+
+    <div class="card-list" id="task-list">
+
+        {% for task in tasks %}
+
+        <div class="task-card
+            {% if task.completed %}
+                completed
+            {% elif task.is_overdue %}
+                overdue
+            {% endif %}
+            rarity-{{ task.importance }}">
+
+
+            <h3>{{ task.title }}</h3>
+
+            {% if task.image %}
+            <img class="card-image" src="{{ task.image.url }}" alt="{{ task.title }}">
+            {% else %}
+            <div class="card-image"></div>
+            {% endif %}
+
+            <div class="card-description">
+                {% if task.description %}
+                {{ task.description }}
+                {% else %}
+                まだ説明文がありません。
+                {% endif %}
+            </div>
+
+            {% if task.deadline %}
+            <p>📅 期限：{{ task.deadline|date:"Y年n月j日" }}</p>
+            {% endif %}
+
+            <p>優先度：
+                {% if task.priority == "high" %}
+                🔴 高
+                {% elif task.priority == "medium" %}
+                🟡 中
+                {% else %}
+                🟢 低
+                {% endif %}
+            </p>
+
+            <div class="card-actions">
+                <form method="POST" action="/toggle/{{ task.id }}/">
+                    {% csrf_token %}
+                    <button type="submit">
+                        {% if task.completed %}未完了に戻す{% else %}完了！{% endif %}
+                    </button>
+                </form>
+
+                <a href="/edit/{{ task.id }}/">編集</a>
+
+                <form method="POST" action="/delete/{{ task.id }}/">
+                    {% csrf_token %}
+                    <button type="submit">削除</button>
+                </form>
+            </div>
+
+        </div>
+        {% empty %}
+        <p>まだカードがありません。最初のタスクを登録してみよう！</p>
+        {% endfor %}
+    </div>
+
+
+    </ul>
+    <script>
+        if (Notification.permission !== "granted") {
+            Notification.requestPermission();
+        } else {
+
+            {% for task in tasks %}
+
+            {% if task.deadline == today and not task.completed %}
+
+            new Notification("リマインダー", {
+                body: "{{ task.title }} の期限は今日です！"
+            });
+
+            {% endif %}
+
+            {% endfor %}
+        }
+    </script>
+    <!-- カード拡大用の画面 -->
+    <div class="card-modal" id="cardModal">
+        <div class="card-modal-content" id="cardModalContent">
+            <button type="button" class="card-modal-close" id="cardModalClose" aria-label="閉じる">×</button>
+        </div>
+    </div>
+    <script>
+        const cardModal = document.getElementById("cardModal");
+        const cardModalContent = document.getElementById("cardModalContent");
+        const cardModalClose = document.getElementById("cardModalClose");
+
+        // カードをクリックしたら拡大する
+        document.querySelectorAll(".task-card").forEach(card => {
+            card.addEventListener("click", function (event) {
+
+                // ボタンやリンクを押したときは拡大しない
+                if (event.target.closest("button, a, form")) {
+                    return;
+                }
+
+                // 前のカードの内容を削除する
+                cardModalContent.querySelectorAll(".task-card").forEach(
+                    oldCard => oldCard.remove()
+                );
+
+                // クリックしたカードを複製する
+                const enlargedCard = card.cloneNode(true);
+
+                // 拡大画面では操作ボタンを隠す
+                const actions = enlargedCard.querySelector(".card-actions");
+                if (actions) {
+                    actions.remove();
+                }
+
+                // 拡大画面にカードを追加する
+                cardModalContent.appendChild(enlargedCard);
+
+                // 拡大画面を表示する
+                cardModal.classList.add("show");
+            });
+        });
+
+        // ×ボタンで閉じる
+        cardModalClose.addEventListener("click", function () {
+            cardModal.classList.remove("show");
+        });
+
+        // カードの外側をクリックして閉じる
+        cardModal.addEventListener("click", function (event) {
+            if (event.target === cardModal) {
+                cardModal.classList.remove("show");
+            }
+        });
+
+        // Escキーでも閉じる
+        document.addEventListener("keydown", function (event) {
+            if (event.key === "Escape") {
+                cardModal.classList.remove("show");
+            }
+        });
+    </script>
+
+    <script>
+        // タスク登録後にカード一覧へ移動
+        document.addEventListener("DOMContentLoaded", function () {
+            const params = new URLSearchParams(window.location.search);
+
+            if (params.get("added") === "1") {
+
+                const message = document.getElementById("added-message");
+
+                if (message) {
+                    message.hidden = false;
+                }
+
+                const taskList = document.getElementById("task-list");
+
+                if (taskList) {
+                    taskList.scrollIntoView({
+                        behavior: "smooth",
+                        block: "start"
+                    });
+                }
+            }
+        });
+    </script>
+
+    <script>
+        // 登録完了メッセージを閉じる
+        function closeAddedMessage() {
+            const message = document.getElementById("added-message");
+
+            if (message) {
+                message.hidden = true;
+            }
+        }
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            // 画像選択欄を取得
+            const imageInput = document.getElementById("task-image");
+
+            // 画像未選択時の表示
+            const emptyArea = document.getElementById("photo-empty");
+
+            // プレビュー表示エリア
+            const previewArea = document.getElementById("photo-preview");
+
+            // プレビュー画像
+            const previewImage = document.getElementById("photo-preview-image");
+
+            let currentImageUrl = null;
+
+            // 画像が選択されたとき
+            imageInput.addEventListener("change", function () {
+
+                const file = imageInput.files[0];
+
+                // 前のプレビューURLを解放する
+                if (currentImageUrl) {
+                    URL.revokeObjectURL(currentImageUrl);
+                    currentImageUrl = null;
+                }
+
+                // 画像が選択されていない場合
+                if (!file || !file.type.startsWith("image/")) {
+                    previewImage.removeAttribute("src");
+                    previewArea.hidden = true;
+                    emptyArea.hidden = false;
+                    return;
+                }
+
+                // 選んだ画像の一時URLを作成
+                currentImageUrl = URL.createObjectURL(file);
+
+                // プレビュー画像に設定
+                previewImage.src = currentImageUrl;
+
+                // 表示を切り替える
+                emptyArea.hidden = true;
+                previewArea.hidden = false;
+            });
+
+        });
+    </script>
+
+    <script>
+        // 完了・削除ボタンを押したときのスクロール位置を保存
+        document.querySelectorAll(
+            '.card-actions form'
+        ).forEach(form => {
+
+            form.addEventListener('submit', function () {
+
+                // 現在のスクロール位置を保存
+                sessionStorage.setItem(
+                    'scrollPosition',
+                    window.scrollY
+                );
+
+            });
+
+        });
+
+        // ページが読み込まれたら保存した位置に戻る
+        window.addEventListener('load', function () {
+
+            const savedPosition =
+                sessionStorage.getItem('scrollPosition');
+
+            if (savedPosition !== null) {
+
+                // 保存した位置へ移動
+                window.scrollTo({
+                    top: Number(savedPosition),
+                    behavior: 'instant'
+                });
+
+                // 保存した位置を削除
+                sessionStorage.removeItem('scrollPosition');
+            }
+
+        });
+    </script>
+</body>
+
+</html>

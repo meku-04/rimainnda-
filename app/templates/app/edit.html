@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <title>カードの編集</title>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 30px 15px;
+            background: #d8e0d8;
+            color: #40594a;
+            font-family: sans-serif;
+        }
+
+        .edit-form {
+            max-width: 760px;
+            margin: 0 auto;
+            padding: 42px 46px;
+            box-sizing: border-box;
+
+            background: #e5e2d2;
+            border: 1px solid #aaa991;
+            box-shadow: 2px 4px 10px #283b3212;
+        }
+
+        .form-heading {
+            margin-bottom: 30px;
+            padding-bottom: 18px;
+            border-bottom: 1px solid #b6b5a0;
+        }
+
+        .journal-index {
+            display: block;
+            margin-bottom: 10px;
+            color: #827c65;
+            font-family: Georgia, serif;
+            font-size: 11px;
+            letter-spacing: 2px;
+        }
+
+        h1 {
+            margin: 0;
+            font-family: Georgia, serif;
+            font-size: 22px;
+            font-weight: normal;
+        }
+
+        .form-heading p {
+            font-size: 12px;
+            color: #777969;
+        }
+
+        .form-field {
+            margin-bottom: 28px;
+        }
+
+        .form-field label.field-label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        input[type="text"],
+        input[type="date"],
+        textarea {
+            width: 100%;
+            padding: 12px;
+            box-sizing: border-box;
+
+            background: #f0eddf;
+            border: 1px solid #c8c8b6;
+
+            color: #403f35;
+            font-size: 14px;
+        }
+
+        textarea {
+            min-height: 130px;
+            resize: vertical;
+            line-height: 1.8;
+        }
+
+        .priority-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .priority-option {
+            cursor: pointer;
+        }
+
+        .priority-option input {
+            display: none;
+        }
+
+        .priority-option span {
+            display: block;
+            padding: 13px 8px;
+
+            background: #f0eddf;
+            border: 1px solid #b8ae96;
+
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .priority-option input:checked + span {
+            background: #d8c8a5;
+            border-color: #a18452;
+        }
+
+        .current-image {
+            display: block;
+            max-width: 100%;
+            max-height: 250px;
+            margin: 15px auto;
+            object-fit: contain;
+            border: 5px solid #f0eddf;
+        }
+
+        input[type="file"] {
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .save-button {
+            width: 100%;
+            padding: 16px;
+
+            background: #405c4a;
+            color: #f0eddf;
+
+            border: none;
+            font-family: Georgia, serif;
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        .save-button:hover {
+            background: #304b3a;
+        }
+
+        .back-link {
+            display: block;
+            margin-top: 20px;
+            text-align: center;
+            color: #40594a;
+            text-decoration: none;
+        }
+
+        @media (max-width: 600px) {
+            .edit-form {
+                padding: 25px 18px;
+            }
+
+            .priority-options {
+                gap: 6px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <form method="POST"
+          enctype="multipart/form-data"
+          class="edit-form">
+
+        {% csrf_token %}
+
+        <div class="form-heading">
+            <span class="journal-index">EDIT</span>
+
+            <h1>記録の書き直し</h1>
+        </div>
+
+        <!-- ① タスク名 -->
+        <div class="form-field">
+
+            <label class="field-label" for="task-title">
+                1. タスク名
+            </label>
+
+            <input
+                type="text"
+                id="task-title"
+                name="title"
+                value="{{ task.title }}"
+                required
+            >
+
+        </div>
+
+        <!-- ② 期限 -->
+        <div class="form-field">
+
+            <label class="field-label" for="task-deadline">
+                2. 期限
+            </label>
+
+            <input
+                type="date"
+                id="task-deadline"
+                name="deadline"
+                value="{{ task.deadline|date:'Y-m-d' }}"
+            >
+
+        </div>
+
+        <!-- ③ 優先度 -->
+        <div class="form-field">
+
+            <label class="field-label">
+                3. 優先度
+            </label>
+
+            <div class="priority-options">
+
+                <label class="priority-option">
+                    <input
+                        type="radio"
+                        name="priority"
+                        value="high"
+                        {% if task.priority == "high" %}checked{% endif %}
+                    >
+                    <span>🔴 高</span>
+                </label>
+
+                <label class="priority-option">
+                    <input
+                        type="radio"
+                        name="priority"
+                        value="medium"
+                        {% if task.priority == "medium" %}checked{% endif %}
+                    >
+                    <span>🟡 中</span>
+                </label>
+
+                <label class="priority-option">
+                    <input
+                        type="radio"
+                        name="priority"
+                        value="low"
+                        {% if task.priority == "low" %}checked{% endif %}
+                    >
+                    <span>🟢 低</span>
+                </label>
+
+            </div>
+
+        </div>
+
+        <!-- ④ 説明文 -->
+        <div class="form-field">
+
+            <label class="field-label" for="task-description">
+                4. 説明文
+            </label>
+
+            <textarea
+                id="task-description"
+                name="description"
+            >{{ task.description }}</textarea>
+
+        </div>
+
+        <!-- ⑤ 写真 -->
+        <div class="form-field">
+
+            <label class="field-label" for="task-image">
+                5. カードの画像
+            </label>
+
+            {% if task.image %}
+
+                <p>現在の写真</p>
+
+                <img
+                    src="{{ task.image.url }}"
+                    class="current-image"
+                    alt="現在のカード画像"
+                >
+
+            {% endif %}
+
+            <p>新しい写真を選択すると変更できます。</p>
+
+            <input
+                type="file"
+                id="task-image"
+                name="image"
+                accept="image/*"
+            >
+
+        </div>
+
+        <!-- 保存 -->
+        <button type="submit" class="save-button">
+            変更を保存する
+        </button>
+
+        <a href="/" class="back-link">
+            ← やることリストに戻る
+        </a>
+
+    </form>
+
+</body>
+</html>
